@@ -9,7 +9,7 @@ ADDED_WORDS = ['tv', 'haystack', 'crab', 'scooter', 'snowman', 'elk', 'chimney',
 BOARD_DIM = 4
 WORD_LENGTHS = [4,6,6]
 BOARD_STRING = 'raweebtlmturtins'
-ADVANCED = True
+ADVANCED = False
 
 ################# TRIE FUNCTIONS #################
 
@@ -127,7 +127,7 @@ def grid_is_full(grid):
                 return False
     return True
 
-def solve_wb(grid_arrays, valid_lengths, solutions, word_list):
+def solve_wb(grid_arrays, valid_lengths, solutions, word_list, print_):
     # Solves wordbrain
     for row in range(len(grid_arrays[-1][0])):
         for col in range(len(grid_arrays[-1][0][0])):
@@ -156,9 +156,9 @@ def solve_wb(grid_arrays, valid_lengths, solutions, word_list):
 
                 if grid_is_empty(new_grid):
                     solutions.append(copy.deepcopy(grid_arrays))
-                    print [x[1][0] for x in grid_arrays if x[1] != None]
+                    if print_: print [x[1][0] for x in grid_arrays if x[1] != None]
                 else:
-                    solve_wb(grid_arrays, valid_lengths, solutions, word_list)
+                    solve_wb(grid_arrays, valid_lengths, solutions, word_list, print_)
 
                 for i in range(len(valid_lengths)):
                     if valid_lengths[i][0] == len(word_data[0]) and valid_lengths[i][1] == False:
@@ -170,23 +170,23 @@ def solve_wb(grid_arrays, valid_lengths, solutions, word_list):
                 del grid_arrays[-1]
     return solutions
 
-def main():
+def main(advanced_dict, added_words, word_lengths, board_dim, board_string, print_):
 
-    print "Constructing word dictionary from word list"
-    if ADVANCED:
+    if print_: print "Constructing word dictionary from word list"
+    if advanced_dict:
         f = open('/usr/share/dict/words', 'r')
     else:
         f = open('word_lists/wiki-100k.txt', 'r')
     word_dict = [word.lower() for word in f.read().split()]
-    word_dict += ADDED_WORDS
+    word_dict += added_words
     wst = make_trie(word_dict)
 
-    numbers = WORD_LENGTHS
+    numbers = word_lengths
     boards = []
     prev = 0
     original_board = []
-    for i in range(BOARD_DIM, len(BOARD_STRING) + 1, BOARD_DIM):
-        original_board.append(BOARD_STRING[prev:i])
+    for i in range(board_dim, len(board_string) + 1, board_dim):
+        original_board.append(board_string[prev:i])
         prev = i
 
     solutions = []
@@ -195,9 +195,12 @@ def main():
     for length in numbers:
         valid_lengths_dict.append([length, True])
 
-    solve_wb(boards, valid_lengths_dict, solutions, wst)
+    solve_wb(boards, valid_lengths_dict, solutions, wst, print_)
 
-    
+    solution_words = []
+    for gridarrays in solutions:
+        solution_words.append([x[1][0] for x in gridarrays if x[1] != None])
+    return solution_words
 
 
 
@@ -205,4 +208,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(ADVANCED, ADDED_WORDS, WORD_LENGTHS, BOARD_DIM, BOARD_STRING, True)
